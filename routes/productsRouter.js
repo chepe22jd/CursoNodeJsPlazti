@@ -1,65 +1,47 @@
 const express = require("express");
-const faker = require("faker");
+const ProductsServices = require('./../services/productsServices');
 
 const router = express.Router();
+const service = new ProductsServices;
 
-router.get("/", (req, res) =>{
-  const products = [];
-  const { size } = req.query;
-  const limit = size || 10;
-  for(let index = 0; index < limit; index++){
-   products.push({
-     name: faker.commerce.productName(),
-     price: faker.commerce.price(),
-     image: faker.image.imageUrl(),
-   })
-  }
+router.get("/", async (req, res) =>{
+  const products = await service.find()
   res.json(products);
  });
 
- router.get("/:id", (req, res) => {
-   const {id} = req.params;
-   res.json({
-     id: id,
-     name: 'Producto 1',
-       price: 1000
-   });
+ router.get("/:id", async (req, res) => {
+  const {id} = req.params;
+  const products = await service.findOne(id);
+  res.json(products);
  });
 
- router.post("/", (req, res)=> {
+ router.post("/", async (req, res)=> {
   const body = req.body;
-  res.json(
-    {
-      message: 'created',
-      data: body
-    }
-  );
+  const newProduct = await service.create(body);
+  res.status(201).json(newProduct);
  });
 
  //EL PATC ES MEJOR PARA ENVIAR SOLO UNA MODIFCIAON
  //A UN O VARIOS PARAMETROS, MIENTRAS EL PUSH ES PARA
  //ACTAULIZAR TODO PERO HAY QUE NEVIAR TODO EL CUERPO
  //ESTO SEGUN LA DOCUMENTACION COMPLETA
- router.patch("/:id", (req, res)=> {
-  const { id } = req.params;
-  const body = req.body;
-  res.json(
-    {
-      message: 'update',
-      data: body,
-      id,
+ router.patch("/:id", async (req, res)=> {
+    try {
+      const { id } = req.params;
+      const body = req.body;
+      const product = await service.update(id, body);
+      res.json(product);
+    } catch (error) {
+      res.status(404).json({
+        message: error.message
+      });
     }
-  );
  });
 
- router.delete("/:id", (req, res)=> {
+ router.delete("/:id", async (req, res)=> {
   const { id } = req.params;
-  res.json(
-    {
-      message: 'deleted',
-      id,
-    }
-  );
+  const rta = await service.delete(id);
+  res.json(rta);
  });
 
  module.exports = router
