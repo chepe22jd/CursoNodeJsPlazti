@@ -9,10 +9,14 @@ router.get("/", async (req, res) =>{
   res.json(products);
  });
 
- router.get("/:id", async (req, res) => {
-  const {id} = req.params;
-  const products = await service.findOne(id);
-  res.json(products);
+ router.get("/:id", async (req, res, next) => {
+  try {
+    const {id} = req.params;
+    const products = await service.findOne(id);
+    res.json(products);
+  } catch (error) {
+    next(error);
+  }
  });
 
  router.post("/", async (req, res)=> {
@@ -25,16 +29,14 @@ router.get("/", async (req, res) =>{
  //A UN O VARIOS PARAMETROS, MIENTRAS EL PUSH ES PARA
  //ACTAULIZAR TODO PERO HAY QUE NEVIAR TODO EL CUERPO
  //ESTO SEGUN LA DOCUMENTACION COMPLETA
- router.patch("/:id", async (req, res)=> {
+ router.patch("/:id", async (req, res, next)=> {
     try {
       const { id } = req.params;
       const body = req.body;
       const product = await service.update(id, body);
       res.json(product);
     } catch (error) {
-      res.status(404).json({
-        message: error.message
-      });
+      next(error);
     }
  });
 
