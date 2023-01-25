@@ -1,5 +1,8 @@
 const express = require("express");
 const ProductsServices = require('./../services/productsServices');
+const validatorHandler = require('./../middleware/validatorHandler');
+const {createProductSchema, updateProductSchema, getProductSchema} = require('./../schemas/productSchemas');
+
 
 const router = express.Router();
 const service = new ProductsServices;
@@ -9,7 +12,9 @@ router.get("/", async (req, res) =>{
   res.json(products);
  });
 
- router.get("/:id", async (req, res, next) => {
+ router.get("/:id",
+ validatorHandler(getProductSchema, 'params'),
+ async (req, res, next) => {
   try {
     const {id} = req.params;
     const products = await service.findOne(id);
@@ -19,7 +24,9 @@ router.get("/", async (req, res) =>{
   }
  });
 
- router.post("/", async (req, res)=> {
+ router.post("/",
+ validatorHandler(createProductSchema, 'body'),
+ async (req, res)=> {
   const body = req.body;
   const newProduct = await service.create(body);
   res.status(201).json(newProduct);
@@ -29,7 +36,10 @@ router.get("/", async (req, res) =>{
  //A UN O VARIOS PARAMETROS, MIENTRAS EL PUSH ES PARA
  //ACTAULIZAR TODO PERO HAY QUE NEVIAR TODO EL CUERPO
  //ESTO SEGUN LA DOCUMENTACION COMPLETA
- router.patch("/:id", async (req, res, next)=> {
+ router.patch("/:id",
+ validatorHandler(getProductSchema, 'params'),
+ validatorHandler(updateProductSchema, 'body'),
+ async (req, res, next)=> {
     try {
       const { id } = req.params;
       const body = req.body;
